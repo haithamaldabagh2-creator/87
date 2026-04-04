@@ -131,6 +131,7 @@ function renderRecords(filter = '') {
       <div class="record-actions">
         <button class="record-btn view" onclick="showPreview('${record.recordId}')"><i class="fa-solid fa-eye"></i> عرض</button>
         <button class="record-btn edit" onclick="editRecord('${record.recordId}')"><i class="fa-solid fa-pen"></i> تعديل</button>
+        <button class="record-btn print" onclick="printRecord('${record.recordId}')"><i class="fa-solid fa-print"></i> طباعة</button>
         <button class="record-btn delete" onclick="deleteRecord('${record.recordId}')"><i class="fa-solid fa-trash"></i> حذف</button>
       </div>
     </article>
@@ -191,6 +192,73 @@ function deleteRecord(id) {
   const updated = getRecords().filter(item => item.recordId !== id);
   saveRecords(updated);
   renderRecords(searchInput.value);
+}
+
+function printData(record) {
+  if (!record) return;
+  const printContent = document.getElementById('printContent');
+  printContent.innerHTML = `
+    <div class="print-grid">
+      <div class="print-section">
+        <h4>بيانات العقد</h4>
+        <div class="print-row"><span>رقم العقد:</span> <strong>${escapeHtml(record.contractNumber || '-')}</strong></div>
+        <div class="print-row"><span>التاريخ:</span> <strong>${escapeHtml(record.contractDate || '-')}</strong></div>
+        <div class="print-row"><span>نوع السيارة:</span> <strong>${escapeHtml(record.carType || '-')}</strong></div>
+        <div class="print-row"><span>الموديل:</span> <strong>${escapeHtml(record.carModel || '-')}</strong></div>
+        <div class="print-row"><span>اللون:</span> <strong>${escapeHtml(record.carColor || '-')}</strong></div>
+        <div class="print-row"><span>رقم المحرك:</span> <strong>${escapeHtml(record.engineNumber || '-')}</strong></div>
+        <div class="print-row"><span>رقم الشاصي:</span> <strong>${escapeHtml(record.chassisNumber || '-')}</strong></div>
+      </div>
+      <div class="print-section">
+        <h4>المبالغ والدفعات</h4>
+        <div class="print-row"><span>السعر الإجمالي:</span> <strong>${formatNumber(record.carPrice)}</strong></div>
+        <div class="print-row"><span>المبلغ المسدد:</span> <strong>${formatNumber(record.paidAmount)}</strong></div>
+        <div class="print-row"><span>المبلغ المتبقي:</span> <strong>${formatNumber(record.remainingAmount)}</strong></div>
+        <div class="print-row"><span>مبلغ القسط:</span> <strong>${formatNumber(record.installmentAmount)}</strong></div>
+        <div class="print-row"><span>عدد الأشهر:</span> <strong>${escapeHtml(record.installmentMonths || '0')}</strong></div>
+      </div>
+      <div class="print-section">
+        <h4>الطرف الأول / البائع</h4>
+        <div class="print-row"><span>الاسم:</span> <strong>${escapeHtml(record.sellerName || '-')}</strong></div>
+        <div class="print-row"><span>الهاتف:</span> <strong>${escapeHtml(record.sellerPhone || '-')}</strong></div>
+        <div class="print-row"><span>رقم الهوية:</span> <strong>${escapeHtml(record.sellerIdNumber || '-')}</strong></div>
+        <div class="print-row"><span>تاريخ الإصدار:</span> <strong>${escapeHtml(record.sellerIssueDate || '-')}</strong></div>
+        <div class="print-row"><span>المهنة:</span> <strong>${escapeHtml(record.sellerProfession || '-')}</strong></div>
+        <div class="print-row"><span>السكن:</span> <strong>${escapeHtml(record.sellerAddress || '-')}</strong></div>
+      </div>
+      <div class="print-section">
+        <h4>الطرف الثاني / المشتري</h4>
+        <div class="print-row"><span>الاسم:</span> <strong>${escapeHtml(record.buyerName || '-')}</strong></div>
+        <div class="print-row"><span>الهاتف:</span> <strong>${escapeHtml(record.buyerPhone || '-')}</strong></div>
+        <div class="print-row"><span>رقم الهوية:</span> <strong>${escapeHtml(record.buyerIdNumber || '-')}</strong></div>
+        <div class="print-row"><span>تاريخ الإصدار:</span> <strong>${escapeHtml(record.buyerIssueDate || '-')}</strong></div>
+        <div class="print-row"><span>المهنة:</span> <strong>${escapeHtml(record.buyerProfession || '-')}</strong></div>
+        <div class="print-row"><span>السكن:</span> <strong>${escapeHtml(record.buyerAddress || '-')}</strong></div>
+      </div>
+    </div>
+    <div class="print-full">
+      <h4>الشروط والملاحظات</h4>
+      <p>${escapeHtml(record.contractTerms || '-')}</p>
+      <hr style="border-top: 1px dashed #ccc; margin: 15px 0; border-bottom:0;">
+      <p><strong>ملاحظات الأقساط:</strong> ${escapeHtml(record.delayNote || '-')}</p>
+    </div>
+    <div class="print-signatures">
+      <div>
+        <h4>توقيع البائع</h4>
+        <p>......................</p>
+      </div>
+      <div>
+        <h4>توقيع المشتري</h4>
+        <p>......................</p>
+      </div>
+    </div>
+  `;
+  window.print();
+}
+
+function printRecord(id) {
+  const record = getRecords().find(item => item.recordId === id);
+  printData(record);
 }
 
 function createPreviewHtml(record) {
@@ -277,6 +345,7 @@ form.addEventListener('submit', (e) => {
 
 document.getElementById('resetFormBtn').addEventListener('click', resetForm);
 document.getElementById('printPreviewBtn').addEventListener('click', () => showPreview());
+document.getElementById('printFormBtn').addEventListener('click', () => printData(collectFormData()));
 document.getElementById('closeModalBtn').addEventListener('click', () => previewModal.classList.add('hidden'));
 previewModal.addEventListener('click', (e) => {
   if (e.target === previewModal) previewModal.classList.add('hidden');
@@ -332,6 +401,7 @@ document.getElementById('importFileInput').addEventListener('change', async (e) 
 window.editRecord = editRecord;
 window.deleteRecord = deleteRecord;
 window.showPreview = showPreview;
+window.printRecord = printRecord;
 
 resetForm();
 renderRecords('');
