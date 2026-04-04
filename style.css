@@ -409,6 +409,7 @@ button, input, textarea {
 .record-btn.edit { background: linear-gradient(145deg, #ff8cab, #ea4f76); }
 .record-btn.delete { background: linear-gradient(145deg, #ff315a, #9f0225); }
 .record-btn.view { background: linear-gradient(145deg, #86243c, #4f0a1a); }
+.record-btn.print { background: linear-gradient(145deg, #d4a017, #b8860b); }
 
 .report-list,
 .alerts-list {
@@ -580,5 +581,92 @@ button, input, textarea {
 
   .nav-btn i {
     font-size: 17px;
+  }
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: black !important;
+    font-family: "Cairo", sans-serif !important;
+  }
+  .app-shell, .modal, .bottom-nav {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+    width: 100%;
+    direction: rtl;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .print-header-img {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: fill;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+  }
+  .print-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .print-section {
+    border: 2px solid #222;
+    border-radius: 12px;
+    padding: 16px;
+    background-color: #fff;
+  }
+  .print-section h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+    font-size: 18px;
+    color: #000;
+  }
+  .print-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  .print-row span {
+    color: #444;
+    font-weight: 600;
+  }
+  .print-row strong {
+    color: #000;
+  }
+  .print-full {
+    border: 2px solid #222;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+  }
+  .print-full h4 {
+    margin-top: 0;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+  }
+  .print-signatures {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 40px;
+    text-align: center;
+  }
+  .print-signatures div {
+    padding: 20px;
+    font-weight: bold;
+    font-size: 18px;
   }
 }
