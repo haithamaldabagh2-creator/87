@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>نظام معرض السيارات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar glass-card">
+      <div>
+        <p class="mini-label">نظام متكامل لمعرض السيارات</p>
+        <h1>إدارة العقود والزبائن</h1>
+      </div>
+      <div class="topbar-icon">
+        <i class="fa-solid fa-car-side"></i>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <section id="tab-home" class="tab-page active">
+        <div class="hero glass-card">
+          <div class="hero-text">
+            <span class="badge"><i class="fa-solid fa-shield-heart"></i> واجهة زجاجية حمراء</span>
+            <h2>نظام بيع وشراء السيارات</h2>
+            <p>
+              نظام مبني للعمل على الهاتف والويندوز بسلاسة، مع تبويبات ثابتة بالأسفل،
+              وحفظ محلي للعقود، وإدارة كاملة للاستماراة، والبحث والتعديل والحذف.
+            </p>
+          </div>
+          <div class="hero-stats">
+            <div class="stat-card glass-card soft">
+              <i class="fa-solid fa-file-signature"></i>
+              <strong id="contractsCount">0</strong>
+              <span>عدد العقود</span>
+            </div>
+            <div class="stat-card glass-card soft">
+              <i class="fa-solid fa-money-bill-wave"></i>
+              <strong id="dueCount">0</strong>
+              <span>عقود بها متبقي</span>
+            </div>
+            <div class="stat-card glass-card soft">
+              <i class="fa-solid fa-users"></i>
+              <strong id="clientsCount">0</strong>
+              <span>أسماء محفوظة</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <article class="glass-card feature-card">
+            <i class="fa-solid fa-file-circle-plus"></i>
+            <h3>إنشاء استمارة</h3>
+            <p>فتح استمارة عقد بيع وشراء السيارات وتعبئتها ثم حفظها مباشرة.</p>
+          </article>
+          <article class="glass-card feature-card">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h3>بحث فوري</h3>
+            <p>البحث عن أي استمارة بواسطة اسم البائع أو المشتري أو رقم العقد.</p>
+          </article>
+          <article class="glass-card feature-card">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <h3>تعديل وحذف</h3>
+            <p>كل استمارة محفوظة تحتوي على أزرار تعديل وحذف بشكل مباشر.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-contract" class="tab-page">
+        <form id="contractForm" class="glass-card contract-form">
+          <div class="section-head">
+            <h2><i class="fa-solid fa-file-signature"></i> استمارة عقد بيع وشراء السيارات</h2>
+            <div class="action-inline">
+              <span id="editBadge" class="edit-badge hidden">وضع التعديل</span>
+              <button type="button" id="resetFormBtn" class="btn secondary-btn"><i class="fa-solid fa-rotate"></i> جديد</button>
+            </div>
+          </div>
+
+          <input type="hidden" id="recordId" />
+
+          <div class="form-grid two-col">
+            <div class="field-group">
+              <label for="contractNumber">رقم العقد</label>
+              <input type="text" id="contractNumber" placeholder="مثال: 1" />
+            </div>
+            <div class="field-group">
+              <label for="contractDate">التاريخ</label>
+              <input type="date" id="contractDate" />
+            </div>
+          </div>
+
+          <div class="sub-section">
+            <h3>بيانات الطرف الأول / البائع</h3>
+            <div class="form-grid three-col">
+              <div class="field-group"><label for="sellerName">اسم المالك</label><input type="text" id="sellerName" /></div>
+              <div class="field-group"><label for="sellerIdNumber">رقم الهوية</label><input type="text" id="sellerIdNumber" /></div>
+              <div class="field-group"><label for="sellerProfession">المهنة</label><input type="text" id="sellerProfession" /></div>
+              <div class="field-group"><label for="sellerPhone">الهاتف</label><input type="text" id="sellerPhone" /></div>
+              <div class="field-group"><label for="sellerAddress">السكن</label><input type="text" id="sellerAddress" /></div>
+              <div class="field-group"><label for="sellerIssueDate">تاريخ الإصدار</label><input type="date" id="sellerIssueDate" /></div>
+            </div>
+          </div>
+
+          <div class="sub-section">
+            <h3>بيانات الطرف الثاني / المشتري</h3>
+            <div class="form-grid three-col">
+              <div class="field-group"><label for="buyerName">اسم المشتري</label><input type="text" id="buyerName" /></div>
+              <div class="field-group"><label for="buyerIdNumber">رقم الهوية</label><input type="text" id="buyerIdNumber" /></div>
+              <div class="field-group"><label for="buyerProfession">المهنة</label><input type="text" id="buyerProfession" /></div>
+              <div class="field-group"><label for="buyerPhone">الهاتف</label><input type="text" id="buyerPhone" /></div>
+              <div class="field-group"><label for="buyerAddress">السكن</label><input type="text" id="buyerAddress" /></div>
+              <div class="field-group"><label for="buyerIssueDate">تاريخ الإصدار</label><input type="date" id="buyerIssueDate" /></div>
+            </div>
+          </div>
+
+          <div class="sub-section">
+            <h3>بيانات السيارة</h3>
+            <div class="form-grid three-col">
+              <div class="field-group"><label for="carType">من نوع</label><input type="text" id="carType" placeholder="هوندا" /></div>
+              <div class="field-group"><label for="carModel">موديل</label><input type="text" id="carModel" placeholder="2025" /></div>
+              <div class="field-group"><label for="carColor">لونها</label><input type="text" id="carColor" placeholder="أبيض" /></div>
+              <div class="field-group"><label for="engineNumber">رقم المحرك</label><input type="text" id="engineNumber" /></div>
+              <div class="field-group"><label for="chassisNumber">رقم الشاصي</label><input type="text" id="chassisNumber" /></div>
+            </div>
+          </div>
+
+          <div class="sub-section">
+            <h3>المبالغ والدفعات</h3>
+            <div class="form-grid three-col">
+              <div class="field-group"><label for="carPrice">بدل نقده</label><input type="number" id="carPrice" min="0" value="0" /></div>
+              <div class="field-group"><label for="paidAmount">المبلغ المسدد</label><input type="number" id="paidAmount" min="0" value="0" /></div>
+              <div class="field-group"><label for="remainingAmount">المبلغ المتبقي</label><input type="number" id="remainingAmount" min="0" value="0" readonly /></div>
+              <div class="field-group"><label for="installmentAmount">مبلغ القسط</label><input type="number" id="installmentAmount" min="0" value="0" /></div>
+              <div class="field-group"><label for="installmentMonths">عدد الأشهر</label><input type="number" id="installmentMonths" min="0" value="0" /></div>
+              <div class="field-group"><label for="delayNote">ملاحظات الأقساط</label><input type="text" id="delayNote" placeholder="مثال: المبلغ الباقي يسدد خلال شهرين" /></div>
+            </div>
+          </div>
+
+          <div class="sub-section">
+            <h3>شروط العقد</h3>
+            <div class="field-group full-width">
+              <label for="contractTerms">الشروط والملاحظات</label>
+              <textarea id="contractTerms" rows="5" placeholder="اكتب شروط العقد هنا..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary-btn"><i class="fa-solid fa-floppy-disk"></i> حفظ الاستمارة</button>
+            <button type="button" id="printPreviewBtn" class="btn dark-btn"><i class="fa-solid fa-eye"></i> معاينة</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="tab-records" class="tab-page">
+        <div class="glass-card list-wrap">
+          <div class="section-head records-head">
+            <h2><i class="fa-solid fa-folder-open"></i> الاستمارات المحفوظة</h2>
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="searchInput" placeholder="ابحث بالاسم أو رقم العقد..." />
+            </div>
+          </div>
+          <div id="recordsContainer" class="records-container"></div>
+        </div>
+      </section>
+
+      <section id="tab-reports" class="tab-page">
+        <div class="reports-grid">
+          <div class="glass-card report-card">
+            <h3><i class="fa-solid fa-chart-line"></i> ملخص النظام</h3>
+            <ul class="report-list">
+              <li><span>إجمالي العقود</span><strong id="reportTotalContracts">0</strong></li>
+              <li><span>إجمالي قيمة العقود</span><strong id="reportTotalValue">0</strong></li>
+              <li><span>إجمالي المسدد</span><strong id="reportPaidValue">0</strong></li>
+              <li><span>إجمالي المتبقي</span><strong id="reportRemainingValue">0</strong></li>
+            </ul>
+          </div>
+          <div class="glass-card report-card">
+            <h3><i class="fa-solid fa-bell"></i> تنبيهات سريعة</h3>
+            <div id="alertsList" class="alerts-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-settings" class="tab-page">
+        <div class="glass-card settings-card">
+          <h2><i class="fa-solid fa-gear"></i> الإعدادات</h2>
+          <p>هذا المشروع محفوظ محليًا داخل المتصفح باستخدام LocalStorage.</p>
+          <div class="settings-actions">
+            <button id="exportDataBtn" class="btn secondary-btn"><i class="fa-solid fa-file-export"></i> تصدير البيانات</button>
+            <button id="importTriggerBtn" class="btn dark-btn"><i class="fa-solid fa-file-import"></i> استيراد البيانات</button>
+            <button id="clearDataBtn" class="btn danger-btn"><i class="fa-solid fa-trash"></i> حذف جميع البيانات</button>
+            <input type="file" id="importFileInput" accept="application/json" hidden />
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav glass-nav">
+      <button class="nav-btn active" data-tab="home"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
+      <button class="nav-btn" data-tab="contract"><i class="fa-solid fa-file-signature"></i><span>الاستمارة</span></button>
+      <button class="nav-btn" data-tab="records"><i class="fa-solid fa-folder"></i><span>السجلات</span></button>
+      <button class="nav-btn" data-tab="reports"><i class="fa-solid fa-chart-pie"></i><span>التقارير</span></button>
+      <button class="nav-btn" data-tab="settings"><i class="fa-solid fa-sliders"></i><span>الإعدادات</span></button>
+    </nav>
+  </div>
+
+  <div id="previewModal" class="modal hidden">
+    <div class="modal-box glass-card">
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-file-lines"></i> معاينة الاستمارة</h3>
+        <button id="closeModalBtn" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="previewContent" class="preview-content"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
