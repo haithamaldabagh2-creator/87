@@ -26,7 +26,7 @@
       <section id="tab-home" class="tab-page active">
         <div class="hero glass-card">
           <div class="hero-text">
-            <span class="badge"><i class="fa-solid fa-shield-heart"></i> واجهة زجاجية حمراء</span>
+            <span class="badge"><i class="fa-solid fa-shield-heart"></i> واجهة زجاجية صفراء 3D</span>
             <h2>نظام بيع وشراء السيارات</h2>
             <p>
               نظام مبني للعمل على الهاتف والويندوز بسلاسة، مع تبويبات ثابتة بالأسفل،
@@ -142,7 +142,11 @@
           </div>
 
           <div class="sub-section">
-            <h3>شروط العقد</h3>
+            <h3>الملاحظات وشروط العقد</h3>
+            <div class="field-group full-width" style="margin-bottom: 14px;">
+              <label for="generalNotes">ملاحظات</label>
+              <textarea id="generalNotes" rows="3" placeholder="اكتب ملاحظاتك الإضافية هنا..."></textarea>
+            </div>
             <div class="field-group full-width">
               <label for="contractTerms">الشروط والملاحظات</label>
               <textarea id="contractTerms" rows="5" placeholder="اكتب شروط العقد هنا..."></textarea>
@@ -152,7 +156,7 @@
           <div class="form-actions">
             <button type="submit" class="btn primary-btn"><i class="fa-solid fa-floppy-disk"></i> حفظ الاستمارة</button>
             <button type="button" id="printPreviewBtn" class="btn dark-btn"><i class="fa-solid fa-eye"></i> معاينة</button>
-            <button type="button" id="printFormBtn" class="btn" style="background: linear-gradient(145deg, #d4a017, #b8860b);"><i class="fa-solid fa-print"></i> طباعة</button>
+            <button type="button" id="printFormBtn" class="btn" style="background: linear-gradient(145deg, #d4a017, #b8860b); color: #fff;"><i class="fa-solid fa-print"></i> طباعة</button>
           </div>
         </form>
       </section>
@@ -222,7 +226,6 @@
   </div>
 
   <div id="printArea" class="print-only">
-    <img src="image_bbb7a1.png" alt="شعار الشركة" class="print-header-img" />
     <div id="printContent"></div>
   </div>
 
