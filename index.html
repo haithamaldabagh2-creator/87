@@ -1,234 +1,532 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>نظام معرض السيارات</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="app-shell">
-    <header class="topbar glass-card">
+const STORAGE_KEY = 'carContractsAppRecords';
+
+const tabs = document.querySelectorAll('.nav-btn');
+const pages = document.querySelectorAll('.tab-page');
+const form = document.getElementById('contractForm');
+const searchInput = document.getElementById('searchInput');
+const recordsContainer = document.getElementById('recordsContainer');
+const editBadge = document.getElementById('editBadge');
+const previewModal = document.getElementById('previewModal');
+const previewContent = document.getElementById('previewContent');
+
+const fields = {
+  recordId: document.getElementById('recordId'),
+  contractNumber: document.getElementById('contractNumber'),
+  contractDate: document.getElementById('contractDate'),
+  sellerName: document.getElementById('sellerName'),
+  sellerIdNumber: document.getElementById('sellerIdNumber'),
+  sellerProfession: document.getElementById('sellerProfession'),
+  sellerPhone: document.getElementById('sellerPhone'),
+  sellerAddress: document.getElementById('sellerAddress'),
+  sellerIssueDate: document.getElementById('sellerIssueDate'),
+  buyerName: document.getElementById('buyerName'),
+  buyerIdNumber: document.getElementById('buyerIdNumber'),
+  buyerProfession: document.getElementById('buyerProfession'),
+  buyerPhone: document.getElementById('buyerPhone'),
+  buyerAddress: document.getElementById('buyerAddress'),
+  buyerIssueDate: document.getElementById('buyerIssueDate'),
+  carType: document.getElementById('carType'),
+  carModel: document.getElementById('carModel'),
+  carColor: document.getElementById('carColor'),
+  engineNumber: document.getElementById('engineNumber'),
+  chassisNumber: document.getElementById('chassisNumber'),
+  carPrice: document.getElementById('carPrice'),
+  paidAmount: document.getElementById('paidAmount'),
+  remainingAmount: document.getElementById('remainingAmount'),
+  installmentAmount: document.getElementById('installmentAmount'),
+  installmentMonths: document.getElementById('installmentMonths'),
+  delayNote: document.getElementById('delayNote'),
+  generalNotes: document.getElementById('generalNotes'),
+  contractTerms: document.getElementById('contractTerms')
+};
+
+function getRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecords(records) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString('en-US');
+}
+
+function calculateRemaining() {
+  const total = Number(fields.carPrice.value || 0);
+  const paid = Number(fields.paidAmount.value || 0);
+  const remaining = Math.max(total - paid, 0);
+  fields.remainingAmount.value = remaining;
+}
+
+function collectFormData() {
+  calculateRemaining();
+  return Object.fromEntries(Object.entries(fields).map(([key, el]) => [key, el.value.trim()]));
+}
+
+function setFormData(data) {
+  Object.entries(fields).forEach(([key, el]) => {
+    el.value = data?.[key] ?? '';
+  });
+  calculateRemaining();
+}
+
+function resetForm() {
+  form.reset();
+  fields.recordId.value = '';
+  fields.carPrice.value = 0;
+  fields.paidAmount.value = 0;
+  fields.remainingAmount.value = 0;
+  fields.installmentAmount.value = 0;
+  fields.installmentMonths.value = 0;
+  editBadge.classList.add('hidden');
+}
+
+function switchTab(tabName) {
+  tabs.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+  pages.forEach(page => page.classList.toggle('active', page.id === `tab-${tabName}`));
+}
+
+function renderRecords(filter = '') {
+  const records = getRecords();
+  const query = filter.trim().toLowerCase();
+  const filtered = records.filter(record => {
+    const haystack = [
+      record.contractNumber,
+      record.sellerName,
+      record.buyerName,
+      record.carType,
+      record.carModel
+    ].join(' ').toLowerCase();
+    return haystack.includes(query);
+  });
+
+  if (!filtered.length) {
+    recordsContainer.innerHTML = `<div class="empty-state">لا توجد استمارات مطابقة حاليًا.</div>`;
+    updateDashboard(records);
+    return;
+  }
+
+  recordsContainer.innerHTML = filtered.map(record => `
+    <article class="record-item">
+      <div class="record-top">
+        <div>
+          <h3 class="record-title">عقد رقم ${escapeHtml(record.contractNumber || '-')}</h3>
+          <div class="record-meta">
+            <span><i class="fa-solid fa-user"></i> البائع: ${escapeHtml(record.sellerName || '-')}</span>
+            <span><i class="fa-solid fa-user-check"></i> المشتري: ${escapeHtml(record.buyerName || '-')}</span>
+          </div>
+        </div>
+        <span class="badge">${escapeHtml(record.contractDate || 'بدون تاريخ')}</span>
+      </div>
+      <div class="record-values">
+        <div class="value-box"><span>نوع السيارة</span><strong>${escapeHtml(record.carType || '-')} ${escapeHtml(record.carModel || '')}</strong></div>
+        <div class="value-box"><span>السعر</span><strong>${formatNumber(record.carPrice)}</strong></div>
+        <div class="value-box"><span>المسدد</span><strong>${formatNumber(record.paidAmount)}</strong></div>
+        <div class="value-box"><span>المتبقي</span><strong>${formatNumber(record.remainingAmount)}</strong></div>
+      </div>
+      <div class="record-actions">
+        <button class="record-btn view" onclick="showPreview('${record.recordId}')"><i class="fa-solid fa-eye"></i> عرض</button>
+        <button class="record-btn edit" onclick="editRecord('${record.recordId}')"><i class="fa-solid fa-pen"></i> تعديل</button>
+        <button class="record-btn print" onclick="printRecord('${record.recordId}')"><i class="fa-solid fa-print"></i> طباعة</button>
+        <button class="record-btn delete" onclick="deleteRecord('${record.recordId}')"><i class="fa-solid fa-trash"></i> حذف</button>
+      </div>
+    </article>
+  `).join('');
+
+  updateDashboard(records);
+}
+
+function updateDashboard(records = getRecords()) {
+  const totalContracts = records.length;
+  const dueCount = records.filter(item => Number(item.remainingAmount) > 0).length;
+  const names = new Set(records.flatMap(item => [item.sellerName, item.buyerName]).filter(Boolean));
+
+  document.getElementById('contractsCount').textContent = totalContracts;
+  document.getElementById('dueCount').textContent = dueCount;
+  document.getElementById('clientsCount').textContent = names.size;
+
+  const totalValue = records.reduce((sum, item) => sum + Number(item.carPrice || 0), 0);
+  const totalPaid = records.reduce((sum, item) => sum + Number(item.paidAmount || 0), 0);
+  const totalRemaining = records.reduce((sum, item) => sum + Number(item.remainingAmount || 0), 0);
+
+  document.getElementById('reportTotalContracts').textContent = formatNumber(totalContracts);
+  document.getElementById('reportTotalValue').textContent = formatNumber(totalValue);
+  document.getElementById('reportPaidValue').textContent = formatNumber(totalPaid);
+  document.getElementById('reportRemainingValue').textContent = formatNumber(totalRemaining);
+
+  const alertsList = document.getElementById('alertsList');
+  const dueRecords = records.filter(item => Number(item.remainingAmount) > 0);
+
+  if (!dueRecords.length) {
+    alertsList.innerHTML = '<div class="empty-state">لا توجد تنبيهات حالياً.</div>';
+    return;
+  }
+
+  alertsList.innerHTML = dueRecords.slice(0, 6).map(item => `
+    <div class="alert-item">
       <div>
-        <p class="mini-label">نظام متكامل لمعرض السيارات</p>
-        <h1>إدارة العقود والزبائن</h1>
+        <strong>${escapeHtml(item.buyerName || item.sellerName || 'بدون اسم')}</strong>
+        <p>المتبقي: ${formatNumber(item.remainingAmount)}${item.delayNote ? ' - ' + escapeHtml(item.delayNote) : ''}</p>
       </div>
-      <div class="topbar-icon">
-        <i class="fa-solid fa-car-side"></i>
-      </div>
-    </header>
-
-    <main class="content-area">
-      <section id="tab-home" class="tab-page active">
-        <div class="hero glass-card">
-          <div class="hero-text">
-            <span class="badge"><i class="fa-solid fa-shield-heart"></i> واجهة زجاجية صفراء 3D</span>
-            <h2>نظام بيع وشراء السيارات</h2>
-            <p>
-              نظام مبني للعمل على الهاتف والويندوز بسلاسة، مع تبويبات ثابتة بالأسفل،
-              وحفظ محلي للعقود، وإدارة كاملة للاستماراة، والبحث والتعديل والحذف.
-            </p>
-          </div>
-          <div class="hero-stats">
-            <div class="stat-card glass-card soft">
-              <i class="fa-solid fa-file-signature"></i>
-              <strong id="contractsCount">0</strong>
-              <span>عدد العقود</span>
-            </div>
-            <div class="stat-card glass-card soft">
-              <i class="fa-solid fa-money-bill-wave"></i>
-              <strong id="dueCount">0</strong>
-              <span>عقود بها متبقي</span>
-            </div>
-            <div class="stat-card glass-card soft">
-              <i class="fa-solid fa-users"></i>
-              <strong id="clientsCount">0</strong>
-              <span>أسماء محفوظة</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="cards-grid">
-          <article class="glass-card feature-card">
-            <i class="fa-solid fa-file-circle-plus"></i>
-            <h3>إنشاء استمارة</h3>
-            <p>فتح استمارة عقد بيع وشراء السيارات وتعبئتها ثم حفظها مباشرة.</p>
-          </article>
-          <article class="glass-card feature-card">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <h3>بحث فوري</h3>
-            <p>البحث عن أي استمارة بواسطة اسم البائع أو المشتري أو رقم العقد.</p>
-          </article>
-          <article class="glass-card feature-card">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <h3>تعديل وحذف</h3>
-            <p>كل استمارة محفوظة تحتوي على أزرار تعديل وحذف بشكل مباشر.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="tab-contract" class="tab-page">
-        <form id="contractForm" class="glass-card contract-form">
-          <div class="section-head">
-            <h2><i class="fa-solid fa-file-signature"></i> استمارة عقد بيع وشراء السيارات</h2>
-            <div class="action-inline">
-              <span id="editBadge" class="edit-badge hidden">وضع التعديل</span>
-              <button type="button" id="resetFormBtn" class="btn secondary-btn"><i class="fa-solid fa-rotate"></i> جديد</button>
-            </div>
-          </div>
-
-          <input type="hidden" id="recordId" />
-
-          <div class="form-grid two-col">
-            <div class="field-group">
-              <label for="contractNumber">رقم العقد</label>
-              <input type="text" id="contractNumber" placeholder="مثال: 1" />
-            </div>
-            <div class="field-group">
-              <label for="contractDate">التاريخ</label>
-              <input type="date" id="contractDate" />
-            </div>
-          </div>
-
-          <div class="sub-section">
-            <h3>بيانات الطرف الأول / البائع</h3>
-            <div class="form-grid three-col">
-              <div class="field-group"><label for="sellerName">اسم المالك</label><input type="text" id="sellerName" /></div>
-              <div class="field-group"><label for="sellerIdNumber">رقم الهوية</label><input type="text" id="sellerIdNumber" /></div>
-              <div class="field-group"><label for="sellerProfession">المهنة</label><input type="text" id="sellerProfession" /></div>
-              <div class="field-group"><label for="sellerPhone">الهاتف</label><input type="text" id="sellerPhone" /></div>
-              <div class="field-group"><label for="sellerAddress">السكن</label><input type="text" id="sellerAddress" /></div>
-              <div class="field-group"><label for="sellerIssueDate">تاريخ الإصدار</label><input type="date" id="sellerIssueDate" /></div>
-            </div>
-          </div>
-
-          <div class="sub-section">
-            <h3>بيانات الطرف الثاني / المشتري</h3>
-            <div class="form-grid three-col">
-              <div class="field-group"><label for="buyerName">اسم المشتري</label><input type="text" id="buyerName" /></div>
-              <div class="field-group"><label for="buyerIdNumber">رقم الهوية</label><input type="text" id="buyerIdNumber" /></div>
-              <div class="field-group"><label for="buyerProfession">المهنة</label><input type="text" id="buyerProfession" /></div>
-              <div class="field-group"><label for="buyerPhone">الهاتف</label><input type="text" id="buyerPhone" /></div>
-              <div class="field-group"><label for="buyerAddress">السكن</label><input type="text" id="buyerAddress" /></div>
-              <div class="field-group"><label for="buyerIssueDate">تاريخ الإصدار</label><input type="date" id="buyerIssueDate" /></div>
-            </div>
-          </div>
-
-          <div class="sub-section">
-            <h3>بيانات السيارة</h3>
-            <div class="form-grid three-col">
-              <div class="field-group"><label for="carType">من نوع</label><input type="text" id="carType" placeholder="هوندا" /></div>
-              <div class="field-group"><label for="carModel">موديل</label><input type="text" id="carModel" placeholder="2025" /></div>
-              <div class="field-group"><label for="carColor">لونها</label><input type="text" id="carColor" placeholder="أبيض" /></div>
-              <div class="field-group"><label for="engineNumber">رقم المحرك</label><input type="text" id="engineNumber" /></div>
-              <div class="field-group"><label for="chassisNumber">رقم الشاصي</label><input type="text" id="chassisNumber" /></div>
-            </div>
-          </div>
-
-          <div class="sub-section">
-            <h3>المبالغ والدفعات</h3>
-            <div class="form-grid three-col">
-              <div class="field-group"><label for="carPrice">بدل نقده</label><input type="number" id="carPrice" min="0" value="0" /></div>
-              <div class="field-group"><label for="paidAmount">المبلغ المسدد</label><input type="number" id="paidAmount" min="0" value="0" /></div>
-              <div class="field-group"><label for="remainingAmount">المبلغ المتبقي</label><input type="number" id="remainingAmount" min="0" value="0" readonly /></div>
-              <div class="field-group"><label for="installmentAmount">مبلغ القسط</label><input type="number" id="installmentAmount" min="0" value="0" /></div>
-              <div class="field-group"><label for="installmentMonths">عدد الأشهر</label><input type="number" id="installmentMonths" min="0" value="0" /></div>
-              <div class="field-group"><label for="delayNote">ملاحظات الأقساط</label><input type="text" id="delayNote" placeholder="مثال: المبلغ الباقي يسدد خلال شهرين" /></div>
-            </div>
-          </div>
-
-          <div class="sub-section">
-            <h3>الملاحظات وشروط العقد</h3>
-            <div class="field-group full-width" style="margin-bottom: 14px;">
-              <label for="generalNotes">ملاحظات</label>
-              <textarea id="generalNotes" rows="3" placeholder="اكتب ملاحظاتك الإضافية هنا..."></textarea>
-            </div>
-            <div class="field-group full-width">
-              <label for="contractTerms">الشروط والملاحظات</label>
-              <textarea id="contractTerms" rows="5" placeholder="اكتب شروط العقد هنا..."></textarea>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="btn primary-btn"><i class="fa-solid fa-floppy-disk"></i> حفظ الاستمارة</button>
-            <button type="button" id="printPreviewBtn" class="btn dark-btn"><i class="fa-solid fa-eye"></i> معاينة</button>
-            <button type="button" id="printFormBtn" class="btn" style="background: linear-gradient(145deg, #d4a017, #b8860b); color: #fff;"><i class="fa-solid fa-print"></i> طباعة</button>
-          </div>
-        </form>
-      </section>
-
-      <section id="tab-records" class="tab-page">
-        <div class="glass-card list-wrap">
-          <div class="section-head records-head">
-            <h2><i class="fa-solid fa-folder-open"></i> الاستمارات المحفوظة</h2>
-            <div class="search-box">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="searchInput" placeholder="ابحث بالاسم أو رقم العقد..." />
-            </div>
-          </div>
-          <div id="recordsContainer" class="records-container"></div>
-        </div>
-      </section>
-
-      <section id="tab-reports" class="tab-page">
-        <div class="reports-grid">
-          <div class="glass-card report-card">
-            <h3><i class="fa-solid fa-chart-line"></i> ملخص النظام</h3>
-            <ul class="report-list">
-              <li><span>إجمالي العقود</span><strong id="reportTotalContracts">0</strong></li>
-              <li><span>إجمالي قيمة العقود</span><strong id="reportTotalValue">0</strong></li>
-              <li><span>إجمالي المسدد</span><strong id="reportPaidValue">0</strong></li>
-              <li><span>إجمالي المتبقي</span><strong id="reportRemainingValue">0</strong></li>
-            </ul>
-          </div>
-          <div class="glass-card report-card">
-            <h3><i class="fa-solid fa-bell"></i> تنبيهات سريعة</h3>
-            <div id="alertsList" class="alerts-list"></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="tab-settings" class="tab-page">
-        <div class="glass-card settings-card">
-          <h2><i class="fa-solid fa-gear"></i> الإعدادات</h2>
-          <p>هذا المشروع محفوظ محليًا داخل المتصفح باستخدام LocalStorage.</p>
-          <div class="settings-actions">
-            <button id="exportDataBtn" class="btn secondary-btn"><i class="fa-solid fa-file-export"></i> تصدير البيانات</button>
-            <button id="importTriggerBtn" class="btn dark-btn"><i class="fa-solid fa-file-import"></i> استيراد البيانات</button>
-            <button id="clearDataBtn" class="btn danger-btn"><i class="fa-solid fa-trash"></i> حذف جميع البيانات</button>
-            <input type="file" id="importFileInput" accept="application/json" hidden />
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <nav class="bottom-nav glass-nav">
-      <button class="nav-btn active" data-tab="home"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
-      <button class="nav-btn" data-tab="contract"><i class="fa-solid fa-file-signature"></i><span>الاستمارة</span></button>
-      <button class="nav-btn" data-tab="records"><i class="fa-solid fa-folder"></i><span>السجلات</span></button>
-      <button class="nav-btn" data-tab="reports"><i class="fa-solid fa-chart-pie"></i><span>التقارير</span></button>
-      <button class="nav-btn" data-tab="settings"><i class="fa-solid fa-sliders"></i><span>الإعدادات</span></button>
-    </nav>
-  </div>
-
-  <div id="previewModal" class="modal hidden">
-    <div class="modal-box glass-card">
-      <div class="modal-head">
-        <h3><i class="fa-solid fa-file-lines"></i> معاينة الاستمارة</h3>
-        <button id="closeModalBtn" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div id="previewContent" class="preview-content"></div>
+      <span class="badge">${escapeHtml(item.contractNumber || '-')}</span>
     </div>
-  </div>
+  `).join('');
+}
 
-  <div id="printArea" class="print-only">
-    <div id="printContent"></div>
-  </div>
+function editRecord(id) {
+  const record = getRecords().find(item => item.recordId === id);
+  if (!record) return;
+  setFormData(record);
+  editBadge.classList.remove('hidden');
+  switchTab('contract');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-  <script src="script.js"></script>
-</body>
-</html>
+function deleteRecord(id) {
+  const confirmed = confirm('هل أنت متأكد من حذف هذه الاستمارة؟');
+  if (!confirmed) return;
+  const updated = getRecords().filter(item => item.recordId !== id);
+  saveRecords(updated);
+  renderRecords(searchInput.value);
+}
+
+function printData(record) {
+  if (!record) return;
+  
+  let printFrame = document.getElementById('printFrame');
+  if (!printFrame) {
+    printFrame = document.createElement('iframe');
+    printFrame.id = 'printFrame';
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = '0';
+    document.body.appendChild(printFrame);
+  }
+  
+  const doc = printFrame.contentWindow.document;
+  doc.open();
+  doc.write(`
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>طباعة عقد رقم ${escapeHtml(record.contractNumber || '-')}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+      <style>
+        body { 
+          font-family: 'Cairo', sans-serif; 
+          background: #fff; 
+          color: #000;
+          font-size: 14px;
+        }
+        .header-box {
+          border: 2px solid #000;
+          border-radius: 8px;
+          padding: 10px;
+          margin-bottom: 15px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .header-title { text-align: center; flex-grow: 1; }
+        .header-title h1 { margin: 0; font-size: 28px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding-bottom: 5px; }
+        .header-title p { margin: 5px 0 0; font-size: 16px; font-weight: bold; }
+        .header-side { text-align: center; width: 30%; }
+        .header-side h3 { margin: 0; font-size: 18px; font-weight: bold; }
+        .header-side p { margin: 5px 0 0; font-size: 13px; }
+        .section-title {
+          background-color: #f0f0f0 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          padding: 5px 10px;
+          font-weight: bold;
+          font-size: 15px;
+          border: 1px solid #000;
+          margin-bottom: 0;
+          border-bottom: none;
+        }
+        .table { margin-bottom: 15px; border: 1px solid #000; }
+        .table td, .table th { border: 1px solid #000; padding: 6px 10px; vertical-align: middle; }
+        .signatures { margin-top: 30px; }
+        .signatures h5 { font-weight: bold; font-size: 16px; margin-bottom: 40px; }
+        @media print {
+          @page { size: A4; margin: 10mm; }
+          body { margin: 0; padding: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container-fluid py-3">
+        
+        <div class="header-box">
+          <div class="header-side">
+            <h3>معرض ميگا كارس</h3>
+            <p>دهوك - پيشائگه هين ترومبيلا<br>تيرمنال معرض رقم 27</p>
+          </div>
+          <div class="header-title">
+            <h1>Mega Cars</h1>
+            <p>لبيع وشراء السيارات</p>
+          </div>
+          <div class="header-side">
+            <h3>Mega Cars Show</h3>
+            <p>For all types of cars trading</p>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mb-3 fw-bold" style="font-size: 16px;">
+          <div>رقم العقد: ${escapeHtml(record.contractNumber || '-')}</div>
+          <div class="text-decoration-underline fs-5">عقد بيع وشراء سيارة</div>
+          <div>تاريخ العقد: ${escapeHtml(record.contractDate || '-')}</div>
+        </div>
+
+        <div class="section-title">بيانات المتعاقدين</div>
+        <table class="table table-bordered table-sm">
+          <thead class="text-center" style="background-color: #f8f9fa !important; -webkit-print-color-adjust: exact;">
+            <tr>
+              <th style="width: 50%;">الطرف الأول (البائع)</th>
+              <th style="width: 50%;">الطرف الثاني (المشتري)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>الاسم:</strong> ${escapeHtml(record.sellerName || '-')}</td>
+              <td><strong>الاسم:</strong> ${escapeHtml(record.buyerName || '-')}</td>
+            </tr>
+            <tr>
+              <td><strong>رقم الهوية:</strong> ${escapeHtml(record.sellerIdNumber || '-')}</td>
+              <td><strong>رقم الهوية:</strong> ${escapeHtml(record.buyerIdNumber || '-')}</td>
+            </tr>
+            <tr>
+              <td><strong>المهنة:</strong> ${escapeHtml(record.sellerProfession || '-')} | <strong>تاريخ الإصدار:</strong> ${escapeHtml(record.sellerIssueDate || '-')}</td>
+              <td><strong>المهنة:</strong> ${escapeHtml(record.buyerProfession || '-')} | <strong>تاريخ الإصدار:</strong> ${escapeHtml(record.buyerIssueDate || '-')}</td>
+            </tr>
+            <tr>
+              <td><strong>رقم الهاتف:</strong> ${escapeHtml(record.sellerPhone || '-')}</td>
+              <td><strong>رقم الهاتف:</strong> ${escapeHtml(record.buyerPhone || '-')}</td>
+            </tr>
+            <tr>
+              <td><strong>السكن:</strong> ${escapeHtml(record.sellerAddress || '-')}</td>
+              <td><strong>السكن:</strong> ${escapeHtml(record.buyerAddress || '-')}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="section-title">بيانات السيارة والمبالغ</div>
+        <table class="table table-bordered table-sm">
+          <tbody>
+            <tr>
+              <td style="width: 33%;"><strong>النوع:</strong> ${escapeHtml(record.carType || '-')}</td>
+              <td style="width: 33%;"><strong>الموديل:</strong> ${escapeHtml(record.carModel || '-')}</td>
+              <td style="width: 33%;"><strong>اللون:</strong> ${escapeHtml(record.carColor || '-')}</td>
+            </tr>
+            <tr>
+              <td colspan="1"><strong>رقم المحرك:</strong> ${escapeHtml(record.engineNumber || '-')}</td>
+              <td colspan="2"><strong>رقم الشاصي:</strong> ${escapeHtml(record.chassisNumber || '-')}</td>
+            </tr>
+            <tr style="background-color: #f8f9fa !important; -webkit-print-color-adjust: exact;">
+              <td><strong>السعر الكلي:</strong> ${formatNumber(record.carPrice)}</td>
+              <td><strong>المبلغ المسدد:</strong> ${formatNumber(record.paidAmount)}</td>
+              <td><strong>المبلغ المتبقي:</strong> ${formatNumber(record.remainingAmount)}</td>
+            </tr>
+            <tr>
+              <td><strong>مبلغ القسط:</strong> ${formatNumber(record.installmentAmount)}</td>
+              <td><strong>عدد الأشهر:</strong> ${escapeHtml(record.installmentMonths || '0')}</td>
+              <td><strong>ملاحظات الأقساط:</strong> ${escapeHtml(record.delayNote || '-')}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="section-title">الشروط والملاحظات</div>
+        <table class="table table-bordered table-sm">
+          <tbody>
+            <tr>
+              <td style="height: 50px; vertical-align: top;"><strong>ملاحظات إضافية:</strong><br>${escapeHtml(record.generalNotes || '-').replace(/\n/g, '<br>')}</td>
+            </tr>
+            <tr>
+              <td style="height: 80px; vertical-align: top;"><strong>شروط العقد:</strong><br>${escapeHtml(record.contractTerms || '-').replace(/\n/g, '<br>')}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="row signatures text-center">
+          <div class="col-6">
+            <h5>توقيع الطرف الأول (البائع)</h5>
+            <p>.......................................</p>
+          </div>
+          <div class="col-6">
+            <h5>توقيع الطرف الثاني (المشتري)</h5>
+            <p>.......................................</p>
+          </div>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `);
+  doc.close();
+  
+  printFrame.contentWindow.focus();
+  setTimeout(() => {
+    printFrame.contentWindow.print();
+  }, 500);
+}
+
+function printRecord(id) {
+  const record = getRecords().find(item => item.recordId === id);
+  printData(record);
+}
+
+function createPreviewHtml(record) {
+  return `
+    <div class="preview-grid">
+      <div class="preview-block">
+        <h4>بيانات العقد</h4>
+        <p>رقم العقد: ${escapeHtml(record.contractNumber || '-')}</p>
+        <p>التاريخ: ${escapeHtml(record.contractDate || '-')}</p>
+        <p>نوع السيارة: ${escapeHtml(record.carType || '-')}</p>
+        <p>الموديل: ${escapeHtml(record.carModel || '-')}</p>
+        <p>اللون: ${escapeHtml(record.carColor || '-')}</p>
+      </div>
+      <div class="preview-block">
+        <h4>المبالغ</h4>
+        <p>السعر: ${formatNumber(record.carPrice)}</p>
+        <p>المسدد: ${formatNumber(record.paidAmount)}</p>
+        <p>المتبقي: ${formatNumber(record.remainingAmount)}</p>
+        <p>مبلغ القسط: ${formatNumber(record.installmentAmount)}</p>
+        <p>عدد الأشهر: ${escapeHtml(record.installmentMonths || '0')}</p>
+      </div>
+      <div class="preview-block">
+        <h4>البائع</h4>
+        <p>الاسم: ${escapeHtml(record.sellerName || '-')}</p>
+        <p>الهاتف: ${escapeHtml(record.sellerPhone || '-')}</p>
+        <p>الهوية: ${escapeHtml(record.sellerIdNumber || '-')}</p>
+        <p>السكن: ${escapeHtml(record.sellerAddress || '-')}</p>
+      </div>
+      <div class="preview-block">
+        <h4>المشتري</h4>
+        <p>الاسم: ${escapeHtml(record.buyerName || '-')}</p>
+        <p>الهاتف: ${escapeHtml(record.buyerPhone || '-')}</p>
+        <p>الهوية: ${escapeHtml(record.buyerIdNumber || '-')}</p>
+        <p>السكن: ${escapeHtml(record.buyerAddress || '-')}</p>
+      </div>
+    </div>
+    <div class="preview-full">
+      <h4>الملاحظات والشروط</h4>
+      <p><strong>ملاحظات إضافية:</strong><br>${escapeHtml(record.generalNotes || '-').replace(/\n/g, '<br>')}</p>
+      <p><strong>شروط العقد:</strong><br>${escapeHtml(record.contractTerms || '-').replace(/\n/g, '<br>')}</p>
+      <p><strong>ملاحظات الأقساط:</strong> ${escapeHtml(record.delayNote || '-')}</p>
+      <p><strong>رقم المحرك:</strong> ${escapeHtml(record.engineNumber || '-')} | <strong>رقم الشاصي:</strong> ${escapeHtml(record.chassisNumber || '-')}</p>
+    </div>
+  `;
+}
+
+function showPreview(id = null) {
+  const data = id ? getRecords().find(item => item.recordId === id) : collectFormData();
+  if (!data) return;
+  previewContent.innerHTML = createPreviewHtml(data);
+  previewModal.classList.remove('hidden');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = collectFormData();
+  if (!data.sellerName || !data.buyerName) {
+    alert('يرجى إدخال اسم البائع واسم المشتري على الأقل.');
+    return;
+  }
+
+  const records = getRecords();
+  if (data.recordId) {
+    const index = records.findIndex(item => item.recordId === data.recordId);
+    if (index !== -1) records[index] = data;
+  } else {
+    data.recordId = `rec_${Date.now()}`;
+    records.unshift(data);
+  }
+
+  saveRecords(records);
+  resetForm();
+  renderRecords(searchInput.value);
+  switchTab('records');
+});
+
+document.getElementById('resetFormBtn').addEventListener('click', resetForm);
+document.getElementById('printPreviewBtn').addEventListener('click', () => showPreview());
+document.getElementById('printFormBtn').addEventListener('click', () => printData(collectFormData()));
+document.getElementById('closeModalBtn').addEventListener('click', () => previewModal.classList.add('hidden'));
+previewModal.addEventListener('click', (e) => {
+  if (e.target === previewModal) previewModal.classList.add('hidden');
+});
+
+[fields.carPrice, fields.paidAmount].forEach(input => input.addEventListener('input', calculateRemaining));
+searchInput.addEventListener('input', (e) => renderRecords(e.target.value));
+
+tabs.forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+document.getElementById('clearDataBtn').addEventListener('click', () => {
+  if (!confirm('هل تريد حذف جميع البيانات نهائياً؟')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderRecords('');
+  resetForm();
+});
+
+document.getElementById('exportDataBtn').addEventListener('click', () => {
+  const data = JSON.stringify(getRecords(), null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'car-contract-records.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importTriggerBtn').addEventListener('click', () => {
+  document.getElementById('importFileInput').click();
+});
+
+document.getElementById('importFileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error('invalid');
+    saveRecords(data);
+    renderRecords(searchInput.value);
+    alert('تم استيراد البيانات بنجاح.');
+  } catch {
+    alert('ملف الاستيراد غير صالح.');
+  }
+
+  e.target.value = '';
+});
+
+window.editRecord = editRecord;
+window.deleteRecord = deleteRecord;
+window.showPreview = showPreview;
+window.printRecord = printRecord;
+
+resetForm();
+renderRecords('');
