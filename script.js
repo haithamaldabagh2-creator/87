@@ -197,114 +197,187 @@ function deleteRecord(id) {
 
 function printData(record) {
   if (!record) return;
-  const printContent = document.getElementById('printContent');
   
-  printContent.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #555; color: #ffcc00; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-family: 'Cairo', sans-serif;">
-      <div style="text-align: center; flex: 1;">
-        <h2 style="margin: 0; font-size: 24px; color: #ffcc00;">Mega Cars Show</h2>
-        <div style="background-color: #ffcc00; color: #000; padding: 5px 10px; border-radius: 5px; margin-top: 8px; font-weight: bold; font-size: 14px; display: inline-block;">For all types of cars trading</div>
-      </div>
-      <div style="text-align: center; flex: 1.5;">
-        <h1 style="margin: 0; font-size: 32px; border-top: 2px solid #ffcc00; border-bottom: 2px solid #ffcc00; padding: 5px 0; color: #fff;">Mega Cars</h1>
-        <p style="margin: 8px 0 0; font-size: 18px; color: #ffcc00;">لبيع وشراء السيارات</p>
-      </div>
-      <div style="text-align: center; flex: 1; direction: rtl;">
-        <h2 style="margin: 0; font-size: 24px; color: #ffcc00;">معرض ميگا كارس</h2>
-        <div style="background-color: #ffcc00; color: #000; padding: 5px 10px; border-radius: 5px; margin-top: 8px; font-weight: bold; font-size: 14px; display: inline-block;">دهوك - پيشائگه هين ترومبيلا<br>تيرمنال معرض رقم 27</div>
-      </div>
-    </div>
-
-    <div style="text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 20px; text-decoration: underline;">عقد بيع وشراء سيارة</div>
-
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;" border="1" bordercolor="#333">
-        <tr>
-            <td style="padding: 10px; width: 50%;"><strong>رقم العقد:</strong> ${escapeHtml(record.contractNumber || '-')}</td>
-            <td style="padding: 10px; width: 50%;"><strong>تاريخ العقد:</strong> ${escapeHtml(record.contractDate || '-')}</td>
-        </tr>
-    </table>
-
-    <h3 style="margin-bottom: 8px; font-size: 18px; color: #000; border-bottom: 2px solid #ccc; padding-bottom: 5px;">الطرف الأول (البائع)</h3>
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;" border="1" bordercolor="#333">
-        <tr>
-            <td style="padding: 10px; width: 50%;"><strong>الاسم:</strong> ${escapeHtml(record.sellerName || '-')}</td>
-            <td style="padding: 10px; width: 50%;"><strong>رقم الهوية:</strong> ${escapeHtml(record.sellerIdNumber || '-')}</td>
-        </tr>
-        <tr>
-            <td style="padding: 10px; width: 50%;"><strong>المهنة:</strong> ${escapeHtml(record.sellerProfession || '-')}</td>
-            <td style="padding: 10px; width: 50%;"><strong>تاريخ الإصدار:</strong> ${escapeHtml(record.sellerIssueDate || '-')}</td>
-        </tr>
-        <tr>
-            <td style="padding: 10px; width: 50%;"><strong>رقم الهاتف:</strong> ${escapeHtml(record.sellerPhone || '-')}</td>
-            <td style="padding: 10px; width: 50%;"><strong>السكن:</strong> ${escapeHtml(record.sellerAddress || '-')}</td>
-        </tr>
-    </table>
-
-    <h3 style="margin-bottom: 8px; font-size: 18px; color: #000; border-bottom: 2px solid #ccc; padding-bottom: 5px;">الطرف الثاني (المشتري)</h3>
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;" border="1" bordercolor="#333">
-        <tr>
-            <td style="padding: 10px; width: 50%;"><strong>الاسم:</strong> ${escapeHtml(record.buyerName || '-')}</td>
-            <td style="padding: 10px; width: 50%;"><strong>رقم الهوية:</strong> ${escapeHtml(record.buyerIdNumber || '-')}</td>
-        </tr>
-        <tr>
-            <td style="padding: 10px; width: 50%;"><strong>المهنة:</strong> ${escapeHtml(record.buyerProfession || '-')}</td>
-            <td style="padding: 10px; width: 50%;"><strong>تاريخ الإصدار:</strong> ${escapeHtml(record.buyerIssueDate || '-')}</td>
-        </tr>
-        <tr>
-            <td style="padding: 10px; width: 50%;"><strong>رقم الهاتف:</strong> ${escapeHtml(record.buyerPhone || '-')}</td>
-            <td style="padding: 10px; width: 50%;"><strong>السكن:</strong> ${escapeHtml(record.buyerAddress || '-')}</td>
-        </tr>
-    </table>
-
-    <h3 style="margin-bottom: 8px; font-size: 18px; color: #000; border-bottom: 2px solid #ccc; padding-bottom: 5px;">بيانات السيارة والمبالغ</h3>
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;" border="1" bordercolor="#333">
-        <tr>
-            <td style="padding: 10px; width: 33%;"><strong>نوع السيارة:</strong> ${escapeHtml(record.carType || '-')}</td>
-            <td style="padding: 10px; width: 33%;"><strong>الموديل:</strong> ${escapeHtml(record.carModel || '-')}</td>
-            <td style="padding: 10px; width: 33%;"><strong>اللون:</strong> ${escapeHtml(record.carColor || '-')}</td>
-        </tr>
-        <tr>
-            <td style="padding: 10px; width: 50%;" colspan="1"><strong>رقم المحرك:</strong> ${escapeHtml(record.engineNumber || '-')}</td>
-            <td style="padding: 10px; width: 50%;" colspan="2"><strong>رقم الشاصي:</strong> ${escapeHtml(record.chassisNumber || '-')}</td>
-        </tr>
-        <tr>
-            <td style="padding: 10px;"><strong>السعر الكلي:</strong> ${formatNumber(record.carPrice)}</td>
-            <td style="padding: 10px;"><strong>المبلغ المسدد:</strong> ${formatNumber(record.paidAmount)}</td>
-            <td style="padding: 10px;"><strong>المبلغ المتبقي:</strong> ${formatNumber(record.remainingAmount)}</td>
-        </tr>
-        <tr>
-            <td style="padding: 10px;"><strong>مبلغ القسط:</strong> ${formatNumber(record.installmentAmount)}</td>
-            <td style="padding: 10px;"><strong>عدد الأشهر:</strong> ${escapeHtml(record.installmentMonths || '0')}</td>
-            <td style="padding: 10px;"><strong>ملاحظات الأقساط:</strong> ${escapeHtml(record.delayNote || '-')}</td>
-        </tr>
-    </table>
-
-    <h3 style="margin-bottom: 8px; font-size: 18px; color: #000; border-bottom: 2px solid #ccc; padding-bottom: 5px;">الملاحظات والشروط</h3>
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;" border="1" bordercolor="#333">
-        <tr>
-            <td style="padding: 10px; min-height: 60px; vertical-align: top;">
-                <strong>ملاحظات إضافية:</strong><br>${escapeHtml(record.generalNotes || '-').replace(/\n/g, '<br>')}
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 10px; min-height: 80px; vertical-align: top;">
-                <strong>شروط العقد:</strong><br>${escapeHtml(record.contractTerms || '-').replace(/\n/g, '<br>')}
-            </td>
-        </tr>
-    </table>
-
-    <div style="display: flex; justify-content: space-between; margin-top: 50px; text-align: center; padding: 0 50px;">
-        <div>
-            <h4 style="margin-bottom: 40px; color: #000;">توقيع الطرف الأول (البائع)</h4>
-            <p>.......................................</p>
+  let printFrame = document.getElementById('printFrame');
+  if (!printFrame) {
+    printFrame = document.createElement('iframe');
+    printFrame.id = 'printFrame';
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = '0';
+    document.body.appendChild(printFrame);
+  }
+  
+  const doc = printFrame.contentWindow.document;
+  doc.open();
+  doc.write(`
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>طباعة عقد رقم ${escapeHtml(record.contractNumber || '-')}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+      <style>
+        body { 
+          font-family: 'Cairo', sans-serif; 
+          background: #fff; 
+          color: #000;
+          font-size: 14px;
+        }
+        .header-box {
+          border: 2px solid #000;
+          border-radius: 8px;
+          padding: 10px;
+          margin-bottom: 15px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .header-title { text-align: center; flex-grow: 1; }
+        .header-title h1 { margin: 0; font-size: 28px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding-bottom: 5px; }
+        .header-title p { margin: 5px 0 0; font-size: 16px; font-weight: bold; }
+        .header-side { text-align: center; width: 30%; }
+        .header-side h3 { margin: 0; font-size: 18px; font-weight: bold; }
+        .header-side p { margin: 5px 0 0; font-size: 13px; }
+        .section-title {
+          background-color: #f0f0f0 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          padding: 5px 10px;
+          font-weight: bold;
+          font-size: 15px;
+          border: 1px solid #000;
+          margin-bottom: 0;
+          border-bottom: none;
+        }
+        .table { margin-bottom: 15px; border: 1px solid #000; }
+        .table td, .table th { border: 1px solid #000; padding: 6px 10px; vertical-align: middle; }
+        .signatures { margin-top: 30px; }
+        .signatures h5 { font-weight: bold; font-size: 16px; margin-bottom: 40px; }
+        @media print {
+          @page { size: A4; margin: 10mm; }
+          body { margin: 0; padding: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container-fluid py-3">
+        
+        <div class="header-box">
+          <div class="header-side">
+            <h3>معرض ميگا كارس</h3>
+            <p>دهوك - پيشائگه هين ترومبيلا<br>تيرمنال معرض رقم 27</p>
+          </div>
+          <div class="header-title">
+            <h1>Mega Cars</h1>
+            <p>لبيع وشراء السيارات</p>
+          </div>
+          <div class="header-side">
+            <h3>Mega Cars Show</h3>
+            <p>For all types of cars trading</p>
+          </div>
         </div>
-        <div>
-            <h4 style="margin-bottom: 40px; color: #000;">توقيع الطرف الثاني (المشتري)</h4>
-            <p>.......................................</p>
+
+        <div class="d-flex justify-content-between mb-3 fw-bold" style="font-size: 16px;">
+          <div>رقم العقد: ${escapeHtml(record.contractNumber || '-')}</div>
+          <div class="text-decoration-underline fs-5">عقد بيع وشراء سيارة</div>
+          <div>تاريخ العقد: ${escapeHtml(record.contractDate || '-')}</div>
         </div>
-    </div>
-  `;
-  window.print();
+
+        <div class="section-title">بيانات المتعاقدين</div>
+        <table class="table table-bordered table-sm">
+          <thead class="text-center" style="background-color: #f8f9fa !important; -webkit-print-color-adjust: exact;">
+            <tr>
+              <th style="width: 50%;">الطرف الأول (البائع)</th>
+              <th style="width: 50%;">الطرف الثاني (المشتري)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>الاسم:</strong> ${escapeHtml(record.sellerName || '-')}</td>
+              <td><strong>الاسم:</strong> ${escapeHtml(record.buyerName || '-')}</td>
+            </tr>
+            <tr>
+              <td><strong>رقم الهوية:</strong> ${escapeHtml(record.sellerIdNumber || '-')}</td>
+              <td><strong>رقم الهوية:</strong> ${escapeHtml(record.buyerIdNumber || '-')}</td>
+            </tr>
+            <tr>
+              <td><strong>المهنة:</strong> ${escapeHtml(record.sellerProfession || '-')} | <strong>تاريخ الإصدار:</strong> ${escapeHtml(record.sellerIssueDate || '-')}</td>
+              <td><strong>المهنة:</strong> ${escapeHtml(record.buyerProfession || '-')} | <strong>تاريخ الإصدار:</strong> ${escapeHtml(record.buyerIssueDate || '-')}</td>
+            </tr>
+            <tr>
+              <td><strong>رقم الهاتف:</strong> ${escapeHtml(record.sellerPhone || '-')}</td>
+              <td><strong>رقم الهاتف:</strong> ${escapeHtml(record.buyerPhone || '-')}</td>
+            </tr>
+            <tr>
+              <td><strong>السكن:</strong> ${escapeHtml(record.sellerAddress || '-')}</td>
+              <td><strong>السكن:</strong> ${escapeHtml(record.buyerAddress || '-')}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="section-title">بيانات السيارة والمبالغ</div>
+        <table class="table table-bordered table-sm">
+          <tbody>
+            <tr>
+              <td style="width: 33%;"><strong>النوع:</strong> ${escapeHtml(record.carType || '-')}</td>
+              <td style="width: 33%;"><strong>الموديل:</strong> ${escapeHtml(record.carModel || '-')}</td>
+              <td style="width: 33%;"><strong>اللون:</strong> ${escapeHtml(record.carColor || '-')}</td>
+            </tr>
+            <tr>
+              <td colspan="1"><strong>رقم المحرك:</strong> ${escapeHtml(record.engineNumber || '-')}</td>
+              <td colspan="2"><strong>رقم الشاصي:</strong> ${escapeHtml(record.chassisNumber || '-')}</td>
+            </tr>
+            <tr style="background-color: #f8f9fa !important; -webkit-print-color-adjust: exact;">
+              <td><strong>السعر الكلي:</strong> ${formatNumber(record.carPrice)}</td>
+              <td><strong>المبلغ المسدد:</strong> ${formatNumber(record.paidAmount)}</td>
+              <td><strong>المبلغ المتبقي:</strong> ${formatNumber(record.remainingAmount)}</td>
+            </tr>
+            <tr>
+              <td><strong>مبلغ القسط:</strong> ${formatNumber(record.installmentAmount)}</td>
+              <td><strong>عدد الأشهر:</strong> ${escapeHtml(record.installmentMonths || '0')}</td>
+              <td><strong>ملاحظات الأقساط:</strong> ${escapeHtml(record.delayNote || '-')}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="section-title">الشروط والملاحظات</div>
+        <table class="table table-bordered table-sm">
+          <tbody>
+            <tr>
+              <td style="height: 50px; vertical-align: top;"><strong>ملاحظات إضافية:</strong><br>${escapeHtml(record.generalNotes || '-').replace(/\n/g, '<br>')}</td>
+            </tr>
+            <tr>
+              <td style="height: 80px; vertical-align: top;"><strong>شروط العقد:</strong><br>${escapeHtml(record.contractTerms || '-').replace(/\n/g, '<br>')}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="row signatures text-center">
+          <div class="col-6">
+            <h5>توقيع الطرف الأول (البائع)</h5>
+            <p>.......................................</p>
+          </div>
+          <div class="col-6">
+            <h5>توقيع الطرف الثاني (المشتري)</h5>
+            <p>.......................................</p>
+          </div>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `);
+  doc.close();
+  
+  printFrame.contentWindow.focus();
+  setTimeout(() => {
+    printFrame.contentWindow.print();
+  }, 500);
 }
 
 function printRecord(id) {
